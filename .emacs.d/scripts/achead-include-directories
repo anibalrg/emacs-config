@@ -1,0 +1,33 @@
+#!/bin/bash
+# Create a file with the list of the c++ includes to be used by the
+# emacs ac-source-c-headers mode
+readonly SCRIPT_NAME=$(basename $0)
+readonly INCLUDES=~/.emacs.d/achead-includes
+
+# gcc_include_dirs only-cpp
+# only-cpp Return only c++ standard includes
+gcc_include_dirs() {
+    readonly s=$(tempfile).cc
+    touch $s
+    gcc -xc++ -E -v $s 2>&1 \
+        | awk \
+              'BEGIN { p=0 } \
+               /starts here/ {p=1} \
+               /^End of search list/ { p=0 }\
+               /^[[:space:]]+\// { \
+                   if (p) { \
+                       print substr($0, 2) \
+                   }\
+               }'
+
+    rm $s
+}
+
+usage() {
+cat<<EOF
+$SCRIPT_NAME List of C/C++ include directories
+EOF
+}
+
+# Check arguments
+[[ -x $(which gcc) ]] && gcc_include_dirs 

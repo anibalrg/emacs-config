@@ -1,0 +1,76 @@
+#!/bin/bash
+readonly SCRIPT_NAME=$(basename $0)
+readonly ROOT="../.."
+readonly SRC=".emacs .emacs.d"
+# List of directories and file patterns to be excluded from package/installation
+readonly EXCLUDE_PATTERNS=.emacs.d/scripts/tar.exclude
+
+# usage
+usage() {
+    cat <<EOF
+$SCRIPT_NAME [-c|-p]
+Setup emacs.
+-c dir   Backup the current version and copy the new one into dir.
+-p       Only create package, don't install.
+
+EOF
+}
+
+
+# package [package-name]
+# package-name Compression mode is deduced from the package's name.
+create_package() {
+    readonly package=${1:-emacs_config-$(date +"%Y%m%d").tgz}
+    (cd ${ROOT}; tar cf $package -X $EXCLUDE_PATTERNS $SRC)
+}
+
+
+# install_copy dest
+# dest
+install_copy() {
+    readonly DEST=$1
+    
+    [[ -d $DEST ]] \
+        && echo "$DEST already exist!" \
+        && exit 1
+    
+    mkdir $DEST
+    mv $HOME/.emacs $HOME/.emacs.d $DEST    
+    (cd ${ROOT}; tar cf - -X $EXCLUDE_PATTERNS $SRC) | (cd ${HOME}; tar xfp -)
+}
+
+
+# parse args
+[[ ! -f $(basename $0) ]] \
+    && echo "Execute from scripts folder, please." \
+    && exit 2
+
+[[ $# -lt 1 ]] \
+    && usage \
+    && exit 1
+
+while getopts ":c:p" opt; do
+    case "${opt}" in
+        c)
+            copy=1
+            dest_dir=$OPTARG
+            ;;
+        p)
+            package=1
+            ;;
+        *)
+            usage;;
+    esac
+done
+
+shift $((OPTIND-1))
+
+[ ! -z ${copy} ] \
+    && install_copy ${dest_dir:-${ROOT}/emacs_config-$(date +"%Y%m%d")} \
+    && exit 0
+
+[ ! -z ${package} ] \
+    && create_package \
+    && exit 0
+
+
