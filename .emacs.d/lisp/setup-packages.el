@@ -3,19 +3,21 @@
 
 ;; Package repos
 (setq package-archives
-      '(("melpa"     . "http://melpa.org/packages/")
-        ;;("gnu"       . "http://elpa.gnu.org/packages/")
-        ;;("marmalade" . "http://marmalade-repo.org/packages/")
-        ))
+      '(("melpa"     . "http://melpa.org/packages/")))
+
+;; ("gnu"       . "http://elpa.gnu.org/packages/")
+;; ("marmalade" . "http://marmalade-repo.org/packages/")
 
 ;; Only refresh packages lists when ethernet or wifi adapters are up
 (when (or (assoc "en0" (network-interface-list))
           (assoc "wlan0" (network-interface-list)))
 
-  (unless (and (file-exists-p "~/.emacs.d/elpa/archives/gnu)")
-               (file-exists-p "~/.emacs.d/elpa/archives/marmalade")
-               (file-exists-p "~/.emacs.d/elpa/archives/melpa"))
+  (unless (and (file-exists-p "~/.emacs.d/elpa/archives/melpa"))
     (package-refresh-contents)))
+
+;; (file-exists-p "~/.emacs.d/elpa/archives/gnu)")
+;; (file-exists-p "~/.emacs.d/elpa/archives/marmalade")
+
 
 ;; Initialize packages repositories
 (package-initialize)
